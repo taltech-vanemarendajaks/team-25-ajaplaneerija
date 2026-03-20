@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class GatherrApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GatherrApplication.class, args);
+        SpringApplication.run(GatherrApplication.class, args);
 	}
 
 }
