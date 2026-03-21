@@ -1,4 +1,4 @@
-package com.gatherr.model;
+package com.gatherr.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,7 +38,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private com.gatherr.model.enums.EventType type;
+    private com.gatherr.backend.model.enums.EventType type;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)

@@ -1,4 +1,4 @@
-package com.gatherr.model;
+package com.gatherr.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
