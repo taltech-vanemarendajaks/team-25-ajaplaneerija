@@ -1,0 +1,216 @@
+databaseChangeLog:
+  # 1. USERS TABLE
+  - changeSet:
+      id: 001-create-users
+      author: gatherr
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: users_email_unique
+              - column:
+                  name: profile_picture
+                  type: VARCHAR(255)
+              - column:
+                  name: timezone
+                  type: VARCHAR(255)
+              - column:
+                  name: start_on_monday
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time_format_24
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: language
+                  type: VARCHAR(255)
+                  defaultValue: 'EN'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  # 2. EVENTS TABLE
+  - changeSet:
+      id: 002-create-events
+      author: gatherr
+      changes:
+        - createTable:
+            tableName: events
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: short_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: events_short_id_unique
+              - column:
+                  name: creator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: events_creator_id_foreign
+                    references: users(id)
+                    deleteCascade: true
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: times
+                  type: JSONB
+                  remarks: '["0700-10032026","0715-10032026","0730-10032026"]'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timezone
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_deleted
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  # 3. EVENT_USER TABLE
+  - changeSet:
+      id: 003-create-event-user
+      author: gatherr
+      changes:
+        - createTable:
+            tableName: event_user
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: event_user_event_foreign
+                    references: events(id)
+                    deleteCascade: true
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: event_user_user_foreign
+                    references: users(id)
+                    deleteCascade: true
+              - column:
+                  name: available
+                  type: JSONB
+                  remarks: '["0700-10032026","0715-10032026","0730-10032026"]'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: not_available
+                  type: JSONB
+                  remarks: '["0700-10032026","0715-10032026","0730-10032026"]'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: event_user
+            columnNames: event_id, user_id
+            constraintName: event_user_unique
+
+  # 4. INDEXES
+  - changeSet:
+      id: 004-create-indexes
+      author: gatherr
+      changes:
+        - createIndex:
+            tableName: events
+            indexName: events_short_id_index
+            columns:
+              - column:
+                  name: short_id
+        - createIndex:
+            tableName: events
+            indexName: events_creator_id_index
+            columns:
+              - column:
+                  name: creator_id
+        # Liquibase doesn't natively support creating GIN indexes via YAML
+        # so we use raw SQL for this specific Postgres feature!
+        - sql:
+            sql: CREATE INDEX "event_user_available_gin" ON "event_user" USING GIN ("available");
